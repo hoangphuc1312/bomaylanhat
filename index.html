@@ -1,415 +1,464 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIENDEV - Love Animation</title>
+    <title>Không thể truy cập vào tim cô ấy</title>
     <style>
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            background-color: #f7f7f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #5f6368;
+            overflow-x: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0 10%;
+        }
+
+        /* Container chính của trang lỗi Chrome */
+        .main-frame {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Icon báo lỗi kiểu Chrome Crash / Pixel Paper */
+        .icon-wrapper {
+            width: 72px;
+            height: 72px;
+            margin-bottom: 32px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s ease;
+        }
+
+        .icon-wrapper:active {
+            transform: scale(0.95);
+        }
+
+        /* Tiêu đề lỗi chính */
+        h1 {
+            color: #202124;
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1.33;
+            margin-bottom: 16px;
+            letter-spacing: -0.2px;
+        }
+
+        /* Phụ đề */
+        .subtitle {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            color: #5f6368;
+        }
+
+        /* Danh sách gợi ý */
+        .suggestions {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .suggestions p {
+            margin-bottom: 8px;
+            color: #5f6368;
+        }
+
+        .suggestions ul {
+            padding-left: 20px;
+            list-style-type: disc;
+        }
+
+        .suggestions li {
+            margin-bottom: 6px;
+            color: #5f6368;
+        }
+
+        /* Mã lỗi */
+        .error-code {
+            font-size: 12px;
+            color: #5f6368;
+            text-transform: uppercase;
+            font-family: monospace, sans-serif;
+            letter-spacing: 0.5px;
+            margin-bottom: 36px;
+        }
+
+        /* Container nút bấm */
+        .action-container {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        /* Nút bấm chuẩn Chrome */
+        .btn-action {
+            background-color: #1a73e8;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+            transition: background-color 0.15s ease, box-shadow 0.15s ease;
+            outline: none;
+        }
+
+        .btn-action:hover {
+            background-color: #1557b0;
+            box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+        }
+
+        .btn-action:active {
+            background-color: #174ea6;
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+
+        /* Canvas game Khủng long ẩn */
+        #game-container {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            z-index: 5;
+        }
+
+        #dino-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .game-active #error-details {
+            display: none;
+        }
+
+        .game-active #game-container {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 0 24px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+
+            .subtitle, .suggestions {
+                font-size: 14px;
+            }
+        }
+
+        /* Modal xoa dịu khi click "Từ bỏ?" */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
             height: 100vh;
-            font-family: 'Arial', sans-serif;
-            background: radial-gradient(circle at center, #1a0012, #000000);
-            cursor: grab;
-        }
-
-        body:active {
-            cursor:auto;
-        }
-
-        #container {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            perspective: 2000px;
-            perspective-origin: 50% 50%;
-            transform-style: preserve-3d;
-            overflow: hidden;
-        }
-
-        #scene {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-        }
-
-.text-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    will-change: transform;
-    transition: transform 0.15s ease-out;
-    backface-visibility: hidden;
-    perspective: 1500px;
-}
-
-        .floating-text {
-            position: absolute;
-            left: 50%;
-            transform-style: preserve-3d;
-            will-change: transform;
-            white-space: nowrap;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
             pointer-events: none;
-            backface-visibility: hidden;
-            transition: all 0.3s ease;
-            transform-origin: center center;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            padding: 24px 32px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 85%;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
             text-align: center;
-            transform: translateX(-50%);
+            transform: translateY(10px);
+            transition: transform 0.2s ease;
         }
 
-        .depth-layer-1 {
-            transform: translateZ(-250px) scale(1.2);
-            opacity: 0.5;
-            filter: blur(1.5px);
-            font-size: calc(22px + 1vw);
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
         }
 
-        .depth-layer-2 {
-            transform: translateZ(-125px) scale(1.1);
-            opacity: 0.7;
-            filter: blur(0.8px);
-            font-size: calc(26px + 1vw);
+        .modal-card h3 {
+            color: #202124;
+            font-size: 18px;
+            margin-bottom: 12px;
         }
 
-        .depth-layer-3 {
-            transform: translateZ(0) scale(1);
-            opacity: 0.9;
-            filter: blur(0);
-            font-size: calc(30px + 1vw);
-            text-shadow: 0 0 15px currentColor;
+        .modal-card p {
+            color: #5f6368;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
         }
 
-        .depth-layer-4 {
-            transform: translateZ(125px) scale(0.9);
-            opacity: 1;
-            filter: blur(0);
-            font-size: calc(34px + 1vw);
-            text-shadow: 0 0 25px currentColor;
-        }
-
-        .depth-layer-5 {
-            transform: translateZ(250px) scale(0.8);
-            opacity: 1;
-            filter: blur(0);
-            font-size: calc(38px + 1vw);
-            text-shadow: 0 0 35px currentColor;
-        }
-
-        .heart-bg {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center,
-                rgba(255, 105, 180, 0.15) 0%,
-                rgba(255, 20, 147, 0.08) 30%,
-                rgba(255, 20, 147, 0.02) 60%,
-                transparent 80%);
-            pointer-events: none;
-            animation: heartPulse 5s infinite ease-in-out;
-            z-index: -1;
-        }
-
-        .star {
-            position: absolute;
-            background: #ff69b4;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: twinkle var(--duration) infinite alternate ease-in-out;
-            box-shadow: 0 0 3px #ff69b4;
-        }
-
-        .nebula {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(40px);
-            opacity: 0.15;
-            mix-blend-mode: screen;
-            pointer-events: none;
-            animation: nebulaFloat 20s infinite alternate ease-in-out;
-        }
-
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        @keyframes twinkle {
-            0% { opacity: var(--min-opacity); }
-            100% { opacity: var(--max-opacity); }
-        }
-
-        @keyframes nebulaFloat {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(20px, 20px, 50px); }
-        }
-
-        @keyframes heartPulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.5; }
+        .modal-card button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <div id="scene">
-            <div class="heart-bg"></div>
+
+    <div class="main-frame" id="main-frame">
+        
+        <!-- Khu vực Game Canvas khi kích hoạt Dino -->
+        <div id="game-container">
+            <canvas id="dino-canvas" width="600" height="150"></canvas>
+        </div>
+
+        <!-- Chi tiết thông báo lỗi -->
+        <div id="error-details">
+            <!-- Icon Crash chuẩn Chrome Pixel/Vector -->
+            <div class="icon-wrapper" id="icon-btn" title="Nhấn phím Space hoặc click vào đây để chơi game nhảy!">
+                <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M18 12H46L58 24V60H18V12ZM22 16V56H54V26H42V14H22ZM46 16.83L51.17 22H46V16.83Z" fill="#5F6368"/>
+                    <!-- Mắt x x -->
+                    <path d="M28 28L34 34M34 28L28 34" stroke="#5F6368" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M42 28L48 34M48 28L42 34" stroke="#5F6368" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- Miệng buồn -->
+                    <path d="M30 46C34 42 42 42 46 46" stroke="#5F6368" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <!-- Tiêu đề chính -->
+            <h1>Không thể truy cập vào tim cô ấy</h1>
+
+            <!-- Phụ đề -->
+            <p class="subtitle">Kết nối tới cô ấy đã bị mất tín hiệu</p>
+
+            <!-- Gợi ý xử lý -->
+            <div class="suggestions">
+                <p>Hãy thử:</p>
+                <ul>
+                    <li>Yêu người khác</li>
+                    <li>Quên cô ấy</li>
+                    <li>Kiểm tra lại đường truyền</li>
+                </ul>
+            </div>
+
+            <!-- Mã lỗi -->
+            <div class="error-code">ERR_FIND_NO_LOVE</div>
+
+            <!-- Nút bấm hành động -->
+            <div class="action-container">
+                <button class="btn-action" id="btn-giveup">Từ bỏ?</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal phản hồi khi click Từ bỏ -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-card">
+            <h3>Đã chấp nhận từ bỏ 💔</h3>
+            <p>Đôi khi buông tay lại là cách tốt nhất để chữa lành. Chúc bạn sớm tìm được kết nối thực sự dành cho mình!</p>
+            <button id="modal-close">Đóng lại</button>
         </div>
     </div>
 
+    <script>
+        // Xử lý sự kiện Modal nút Từ bỏ
+        const btnGiveup = document.getElementById('btn-giveup');
+        const modal = document.getElementById('modal');
+        const modalClose = document.getElementById('modal-close');
 
-<script>
-        const texts = [
-            "LUÔN LUÔN BÊN NHAU",
-            "LOVE U SO MUCH",
-            "I LOVE YOU",
-            "YÊU EM NHIỀU",
-            "ANH YÊU EM NHIỀU LẮM"
-        ];
+        btnGiveup.addEventListener('click', () => {
+            modal.classList.add('active');
+        });
 
-        const icons = ["❤️", "💖", "💝", "💗", "🌹", "✨", "💫", "⭐"];
-        const colors = [
-            '#ff69b4',
-            '#ff1493',
-            '#ff007f',
-            '#ff69b4',
-            '#ffb6c1'
-        ];
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
 
-        const container = document.getElementById('container');
-        const scene = document.getElementById('scene');
-        const maxElements = 50;
-        let rotateX = 0, rotateY = 0;
-        let scale = 1;
-        let isDragging = false;
-        let startX, startY, lastX, lastY;
-        const textElements = [];
+        // -------------------------------------------------------------------
+        // Mini Game Khủng Long / Trái Tim Nhảy Chướng Ngại Vật 
+        // Kích hoạt khi ấn phím Space hoặc Click vào Icon trang lỗi
+        // -------------------------------------------------------------------
+        const iconBtn = document.getElementById('icon-btn');
+        const mainFrame = document.getElementById('main-frame');
+        const canvas = document.getElementById('dino-canvas');
+        const ctx = canvas.getContext('2d');
 
-        function createTextContainer() {
-            const textContainer = document.createElement('div');
-            textContainer.className = 'text-container';
-            scene.appendChild(textContainer);
-            return textContainer;
+        let isGameStarted = false;
+        let animationFrameId;
+
+        // Cấu hình game
+        const game = {
+            gravity: 0.6,
+            speed: 5,
+            score: 0,
+            groundY: 130,
+            player: {
+                x: 40,
+                y: 100,
+                width: 24,
+                height: 24,
+                velocityY: 0,
+                isJumping: false
+            },
+            obstacles: [],
+            spawnTimer: 0
+        };
+
+        function startMiniGame() {
+            if (isGameStarted) return;
+            isGameStarted = true;
+            mainFrame.classList.add('game-active');
+            
+            // Resize canvas chuẩn khung chứa
+            canvas.width = mainFrame.clientWidth || 600;
+            canvas.height = 150;
+            game.groundY = 130;
+
+            gameLoop();
         }
 
-function createFloatingText(container) {
-    const element = document.createElement('div');
-    element.className = 'floating-text';
-    
-    // Xác định nội dung (text hoặc icon)
-    const isIcon = textElements.length % 4 === 0;
-    if (isIcon) {
-        element.innerText = icons[Math.floor(Math.random() * icons.length)];
-    } else {
-        element.innerText = texts[Math.floor(Math.random() * texts.length)];
-    }
-
-    // Thiết lập layers và vị trí
-    const depthLayers = ['depth-layer-1', 'depth-layer-2', 'depth-layer-3', 'depth-layer-4', 'depth-layer-5'];
-    const layerIndex = Math.floor(Math.random() * depthLayers.length); // Randomize layer
-    const selectedLayer = depthLayers[layerIndex];
-    element.classList.add(selectedLayer);
-
-    // Tính toán vị trí ngẫu nhiên trên toàn màn hình
-    const viewportWidth = window.innerWidth;
-    const spreadWidth = viewportWidth * 0.8; // Sử dụng 80% chiều rộng màn hình
-    const x = (Math.random() * spreadWidth) - (spreadWidth / 2); // Vị trí từ -40% đến +40% chiều rộng
-
-    // Độ sâu của các lớp với khoảng cách ngẫu nhiên
-    const baseZ = selectedLayer.includes('1') ? -250 :
-                 selectedLayer.includes('2') ? -125 :
-                 selectedLayer.includes('3') ? 0 :
-                 selectedLayer.includes('4') ? 125 : 250;
-    const randomZ = baseZ + (Math.random() * 50 - 25); // Thêm độ ngẫu nhiên cho độ sâu
-
-    // Hiệu ứng màu sắc và độ trong suốt
-    const depthFactor = Math.abs(randomZ) / 500;
-    const hue = 330 + Math.random() * 30;
-    const saturation = 100 - depthFactor * 15;
-    const lightness = 85 - depthFactor * 25;
-
-    // Set opacity ban đầu là 0 để fade in
-    element.style.opacity = '0';
-    element.style.color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${1 - depthFactor * 0.15})`;
-
-    // Tăng cường hiệu ứng phát sáng
-    const glowIntensity = 1 - depthFactor * 0.4;
-    element.style.textShadow = `
-        0 0 ${20 * glowIntensity}px currentColor,
-        0 0 ${30 * glowIntensity}px currentColor,
-        0 0 ${40 * glowIntensity}px currentColor
-    `;
-
-    // Thêm rotation ngẫu nhiên ban đầu
-    const initialRotation = Math.random() * 20 - 10;
-
-    // Thiết lập transform ban đầu với rotation
-    element.style.transform = `
-        translate3d(${x}px, -50vh, ${randomZ}px)
-        rotateY(${initialRotation}deg)
-        rotateX(${Math.random() * 10 - 5}deg)
-    `;
-
-    // Thêm element vào container
-    container.appendChild(element);
-
-    // Tính toán các thông số chuyển động
-    const baseSpeed = 0.05;
-    const randomFactor = Math.random() * 0.08;
-    const layerSpeedFactor = selectedLayer.includes('1') ? 0.7 :
-                            selectedLayer.includes('2') ? 0.85 :
-                            selectedLayer.includes('3') ? 1 :
-                            selectedLayer.includes('4') ? 1.15 : 1.3;
-
-    // Fade in sau độ trễ ngẫu nhiên
-    const startDelay = Math.random() * 3000; // Tăng độ trễ tối đa
-    setTimeout(() => {
-        element.style.opacity = '1';
-        element.style.transition = 'opacity 0.5s ease-in';
-    }, startDelay);
-
-    // Thêm vào mảng textElements với các thuộc tính chuyển động đa dạng hơn
-    textElements.push({
-        element,
-        x,
-        z: randomZ,
-        speed: (baseSpeed + randomFactor) * layerSpeedFactor,
-        y: -50 - (Math.random() * 20), // Thêm vị trí bắt đầu ngẫu nhiên
-        layer: selectedLayer,
-        wobbleSpeed: Math.random() * 0.002 + 0.001,
-        wobbleAmount: Math.random() * 0.8 + 0.3, // Tăng độ lắc
-        startDelay: startDelay,
-        rotationSpeed: Math.random() * 0.002 - 0.001, // Tăng tốc độ xoay
-        verticalWobbleSpeed: Math.random() * 0.003 + 0.001,
-        initialScale: 0.8 + Math.random() * 0.4,
-        horizontalDrift: Math.random() * 2 - 1, // Thêm độ trôi ngang
-        rotationOffset: initialRotation
-    });
-}
-function updateElements() {
-    const textContainer = scene.querySelector('.text-container');
-    if (!textContainer) return;
-
-    textElements.forEach((text, index) => {
-        // Thêm độ trễ ban đầu
-        if (Date.now() < text.startDelay) return;
-
-        // Tính toán chuyển động rơi theo đường cong
-        const fallProgress = Math.min((text.y + 50) / 200, 1);
-        const easedSpeed = text.speed * (1 - Math.pow(fallProgress, 2) * 0.3);
-        text.y += easedSpeed;
-
-        // Tạo chuyển động lắc tự nhiên
-        const time = Date.now() * text.wobbleSpeed;
-        const horizontalWobble = Math.sin(time) * text.wobbleAmount * (1 - fallProgress);
-        const verticalWobble = Math.cos(time * 1.5) * 0.3 * (1 - fallProgress);
-        
-        // Hiệu ứng xoay nhẹ theo độ sâu
-        const rotateAmount = text.z > 0 ? 
-            Math.sin(time * 0.5) * 2 * (1 - fallProgress) : 
-            Math.sin(time * 0.5) * -2 * (1 - fallProgress);
-
-        // Áp dụng transform với các hiệu ứng
-        text.element.style.transform = `
-            translate3d(
-                ${text.x + horizontalWobble * 5}px, 
-                ${text.y + verticalWobble}vh, 
-                ${text.z}px
-            )
-            rotateY(${rotateAmount}deg)
-            rotateX(${verticalWobble * 2}deg)
-            rotateZ(${horizontalWobble * 1.5}deg)
-        `;
-
-        // Điều chỉnh opacity dựa trên vị trí
-        const fadeStart = 140;
-        const fadeEnd = 150;
-        if (text.y > fadeStart) {
-            const fadeProgress = (text.y - fadeStart) / (fadeEnd - fadeStart);
-            text.element.style.opacity = 1 - fadeProgress;
-        }
-
-        // Tạo mới khi phần tử đạt đến cuối
-        if (text.y > fadeEnd) {
-            text.element.remove();
-            textElements.splice(index, 1);
-            createFloatingText(textContainer);
-        }
-    });
-    requestAnimationFrame(updateElements);
-}
-
-        function createParticles() {
-            for (let i = 0; i < 200; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                const size = Math.random() * 3 + 1;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                scene.appendChild(particle);
+        function jump() {
+            if (!isGameStarted) {
+                startMiniGame();
+            }
+            if (!game.player.isJumping) {
+                game.player.velocityY = -10;
+                game.player.isJumping = true;
             }
         }
 
-function init() {
-    createParticles();
-    const textContainer = createTextContainer();
-    
-    // Tạo text với khoảng cách thời gian ngẫu nhiên
-    for (let i = 0; i < maxElements; i++) {
-        setTimeout(() => {
-            createFloatingText(textContainer);
-        }, i * (Math.random() * 300 + 100)); // Khoảng cách thời gian ngẫu nhiên
-    }
-    updateElements();
-}
-
-        container.addEventListener('mousedown', e => {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            lastX = rotateY;
-            lastY = rotateX;
+        // Bắt phím Space & Mũi tên lên để nhảy
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                jump();
+            }
         });
 
-        container.addEventListener('mousemove', e => {
-            if (!isDragging) return;
-            const deltaX = e.clientX - startX;
-            const deltaY = e.clientY - startY;
-            rotateY = lastX + deltaX * 0.5;
-            rotateX = lastY + deltaY * 0.5;
-            updateSceneTransform();
-        });
-
-        container.addEventListener('mouseup', () => isDragging = false);
-        container.addEventListener('mouseleave', () => isDragging = false);
-
-        container.addEventListener('wheel', e => {
+        // Click icon hoặc chạm màn hình để nhảy
+        iconBtn.addEventListener('click', startMiniGame);
+        canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            const delta = e.deltaY * -0.001;
-            scale = Math.min(Math.max(0.5, scale + delta), 2);
-            updateSceneTransform();
+            jump();
         });
+        canvas.addEventListener('click', jump);
 
-        function updateSceneTransform() {
-            const textContainer = scene.querySelector('.text-container');
-            if (textContainer) {
-                textContainer.style.transform = `
-                    scale(${scale})
-                    rotateX(${rotateX}deg)
-                    rotateY(${rotateY}deg)
-                `;
+        // Vòng lặp Game
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Vẽ đường mặt đất
+            ctx.beginPath();
+            ctx.moveTo(0, game.groundY);
+            ctx.lineTo(canvas.width, game.groundY);
+            ctx.strokeStyle = '#5f6368';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // 2. Cập nhật nhân vật (Hình trái tim tan vỡ đơn giản)
+            game.player.velocityY += game.gravity;
+            game.player.y += game.player.velocityY;
+
+            if (game.player.y >= game.groundY - game.player.height) {
+                game.player.y = game.groundY - game.player.height;
+                game.player.velocityY = 0;
+                game.player.isJumping = false;
             }
-        }
 
-        init();
+            // Vẽ nhân vật (Icon Pixel dạng khối)
+            ctx.fillStyle = '#eb4034';
+            ctx.fillRect(game.player.x, game.player.y, game.player.width, game.player.height);
+            // Mắt biểu cảm nhân vật
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(game.player.x + 4, game.player.y + 5, 4, 4);
+            ctx.fillRect(game.player.x + 14, game.player.y + 5, 4, 4);
+
+            // 3. Sinh và cập nhật chướng ngại vật
+            game.spawnTimer++;
+            if (game.spawnTimer > 90 + Math.random() * 40) {
+                game.obstacles.push({
+                    x: canvas.width,
+                    y: game.groundY - 28,
+                    width: 14,
+                    height: 28
+                });
+                game.spawnTimer = 0;
+            }
+
+            for (let i = 0; i < game.obstacles.length; i++) {
+                let obs = game.obstacles[i];
+                obs.x -= game.speed;
+
+                // Vẽ chướng ngại vật (Hình chóp / Xương rồng)
+                ctx.fillStyle = '#5f6368';
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+                // Va chạm
+                if (
+                    game.player.x < obs.x + obs.width &&
+                    game.player.x + game.player.width > obs.x &&
+                    game.player.y < obs.y + obs.height &&
+                    game.player.y + game.player.height > obs.y
+                ) {
+                    // Reset game khi đụng
+                    game.obstacles = [];
+                    game.score = 0;
+                    game.speed = 5;
+                    break;
+                }
+            }
+
+            // Lọc chướng ngại vật trôi khỏi màn hình
+            game.obstacles = game.obstacles.filter(obs => obs.x + obs.width > 0);
+
+            // Điểm số
+            game.score += 0.1;
+            if (Math.floor(game.score) % 100 === 0 && game.speed < 10) {
+                game.speed += 0.2;
+            }
+
+            ctx.fillStyle = '#5f6368';
+            ctx.font = '12px monospace';
+            ctx.fillText(`HI ${Math.floor(game.score).toString().padStart(5, '0')}`, canvas.width - 80, 20);
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
     </script>
 </body>
 </html>
